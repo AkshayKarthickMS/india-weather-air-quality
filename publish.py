@@ -115,6 +115,13 @@ Highest average PM-based AQI: {worst}. Lowest: {cleanest}.
 - Forecast tomorrow's PM2.5 from today's weather and air quality (time-series ML).
 - Dust storms: `dust_mean` and `aod_mean` over Rajasthan and the north-west.
 
+## Models and notebooks using this dataset
+
+- **Model:** [pm25-next-day-india](https://huggingface.co/AkshayKarthick/pm25-next-day-india),
+  a LightGBM model that forecasts tomorrow's PM2.5 for all 50 cities, with a full model card.
+- **Notebook:** [Forecasting tomorrow's PM2.5 in 50 Indian cities](https://www.kaggle.com/code/akshaykarthickms007/forecasting-tomorrow-s-pm2-5-in-50-indian-cities)
+- **Notebook:** [India's Air & Weather: a Starter Analysis](https://www.kaggle.com/code/akshaykarthickms007/india-s-air-weather-a-starter-analysis)
+
 ## Files and columns
 
 Join the files on `city` (and `date` for the two daily files).
