@@ -301,22 +301,17 @@ def push(message: str) -> None:
     kapi = KaggleApi()
     kapi.authenticate()
     exists = any(d.ref == KAGGLE_ID for d in kapi.dataset_list(user=KAGGLE_ID.split("/")[0]) or [])
-    for license_name in ("CC-BY-4.0", "other"):
-        (kg / "dataset-metadata.json").write_text(
-            json.dumps(kaggle_meta(s, license_name), indent=2, ensure_ascii=False), encoding="utf-8"
-        )
-        try:
-            if exists:
-                kapi.dataset_create_version(str(kg), version_notes=message, dir_mode="skip", quiet=True)
-            else:
-                kapi.dataset_create_new(str(kg), public=True, dir_mode="skip", quiet=True)
-            # Creation ignores sources, update frequency and cover image; the metadata update sets them.
-            kapi.dataset_metadata_update(KAGGLE_ID, str(kg))
-            break
-        except Exception as e:  # noqa: BLE001 - retry once with a fallback license
-            if "licen" not in str(e).lower() or license_name == "other":
-                raise
-            print(f"Kaggle rejected license {license_name}; retrying with 'other'")
+    # Kaggle's metadata update only accepts the display name, not the "CC-BY-4.0" short code.
+    (kg / "dataset-metadata.json").write_text(
+        json.dumps(kaggle_meta(s, "Attribution 4.0 International (CC BY 4.0)"), indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    if exists:
+        kapi.dataset_create_version(str(kg), version_notes=message, dir_mode="skip", quiet=True)
+    else:
+        kapi.dataset_create_new(str(kg), public=True, dir_mode="skip", quiet=True)
+    # Creation ignores sources, update frequency and cover image; the metadata update sets them.
+    kapi.dataset_metadata_update(KAGGLE_ID, str(kg))
     print(f"Kaggle: https://www.kaggle.com/datasets/{KAGGLE_ID}")
 
 
