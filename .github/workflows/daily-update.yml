@@ -1,0 +1,43 @@
+name: Daily dataset update
+
+on:
+  schedule:
+    - cron: "30 2 * * *"  # 08:00 IST
+  workflow_dispatch:
+
+permissions:
+  contents: write  # commits status.json so GitHub keeps the schedule active
+
+concurrency:
+  group: daily-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Download current data
+        run: python publish.py pull
+      - name: Fetch new days and validate
+        run: python update.py
+      - name: Publish to Hugging Face and Kaggle
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: python publish.py push "Daily update $(date -u +%F)"
+      - name: Record status
+        run: |
+          cp data/metadata.json status.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add status.json
+          git commit -m "Data updated $(date -u +%F)" || echo "nothing to commit"
+          git push

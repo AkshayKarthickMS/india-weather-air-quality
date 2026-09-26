@@ -1,0 +1,4 @@
+requests
+pandas
+huggingface_hub
+kaggle
