@@ -247,6 +247,14 @@ def kaggle_meta(s: dict, license_name: str) -> dict:
         "id": KAGGLE_ID,
         "licenses": [{"name": license_name}],
         "keywords": ["india", "weather and climate", "pollution", "environment", "time series analysis"],
+        "expectedUpdateFrequency": "daily",
+        "userSpecifiedSources": (
+            "Open-Meteo.com (https://open-meteo.com/): Historical Weather API (ECMWF IFS, ERA5/ERA5-Land "
+            "from the Copernicus Climate Change Service) and Air Quality API (Copernicus Atmosphere "
+            "Monitoring Service, CAMS global). Indian AQI computed with the CPCB formula by the author. "
+            "Pipeline: https://github.com/AkshayKarthickMS/india-weather-air-quality"
+        ),
+        "image": "dataset-cover-image.png",
         "description": body(s)
         + f"\n\nAlso on Hugging Face: [huggingface.co/datasets/{HF_REPO}](https://huggingface.co/datasets/{HF_REPO})",
         "resources": [
@@ -289,6 +297,7 @@ def push(message: str) -> None:
     kg.mkdir(parents=True)
     for f in COLUMNS:
         shutil.copy(DATA / f, kg / f)
+    shutil.copy("dataset-cover-image.png", kg / "dataset-cover-image.png")
     kapi = KaggleApi()
     kapi.authenticate()
     exists = any(d.ref == KAGGLE_ID for d in kapi.dataset_list(user=KAGGLE_ID.split("/")[0]) or [])
@@ -299,9 +308,10 @@ def push(message: str) -> None:
         try:
             if exists:
                 kapi.dataset_create_version(str(kg), version_notes=message, dir_mode="skip", quiet=True)
-                kapi.dataset_metadata_update(KAGGLE_ID, str(kg))
             else:
                 kapi.dataset_create_new(str(kg), public=True, dir_mode="skip", quiet=True)
+            # Creation ignores sources, update frequency and cover image; the metadata update sets them.
+            kapi.dataset_metadata_update(KAGGLE_ID, str(kg))
             break
         except Exception as e:  # noqa: BLE001 - retry once with a fallback license
             if "licen" not in str(e).lower() or license_name == "other":
