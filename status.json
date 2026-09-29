@@ -1,15 +1,15 @@
 {
-  "updated_at": "2026-09-28T09:14:19+00:00",
+  "updated_at": "2026-09-29T09:12:26+00:00",
   "cities": 50,
   "weather": {
-    "rows": 104950,
-    "first": "2020-12-29",
-    "last": "2026-09-27"
+    "rows": 123150,
+    "first": "2020-01-01",
+    "last": "2026-09-28"
   },
   "air_quality": {
-    "rows": 75750,
+    "rows": 75800,
     "first": "2022-08-05",
-    "last": "2026-09-27"
+    "last": "2026-09-28"
   },
-  "open_meteo_calls_used": 1678.6
+  "open_meteo_calls_used": 1665.7
 }
