@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import requests
 
 HF_REPO = "AkshayKarthick/india-weather-air-quality"
 KAGGLE_ID = "akshaykarthickms007/india-daily-weather-and-air-quality"
@@ -318,7 +319,15 @@ def push(message: str) -> None:
     else:
         kapi.dataset_create_new(str(kg), public=True, dir_mode="skip", quiet=True)
     # Creation ignores sources, update frequency and cover image; the metadata update sets them.
-    kapi.dataset_metadata_update(KAGGLE_ID, str(kg))
+    # Since 2026-10 Kaggle answers this call with HTTP 200 and an empty body, which the client
+    # fails to parse as JSON; the update itself is applied. The data version is already
+    # published at this point, so a metadata problem must never fail the daily run.
+    try:
+        kapi.dataset_metadata_update(KAGGLE_ID, str(kg.resolve()))
+    except requests.exceptions.JSONDecodeError:
+        print("Kaggle metadata update: empty response body (HTTP 200), treating as applied")
+    except Exception as e:  # noqa: BLE001
+        print(f"WARNING: Kaggle metadata update failed ({type(e).__name__}: {e}); data version was published")
     print(f"Kaggle: https://www.kaggle.com/datasets/{KAGGLE_ID}")
 
 
